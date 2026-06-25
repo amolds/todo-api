@@ -8,6 +8,7 @@ out/
 *.iml
 
 # Kotlin/Java
+.kotlin
 *.class
 
 # OS files

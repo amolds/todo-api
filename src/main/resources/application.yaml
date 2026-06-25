@@ -10,3 +10,5 @@ ktor:
       issuer: todo-api
       audience: todo-api
       secret: ${?JWT_SECRET}
+  redis:
+    url: ${?REDIS_URL}

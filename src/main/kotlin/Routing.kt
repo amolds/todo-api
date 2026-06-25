@@ -19,24 +19,30 @@ import com.olds.interfaces.UserRepository
 import com.olds.models.User
 import com.olds.repositories.InMemoryTodoRepository
 import com.olds.repositories.InMemoryUserRepository
+import com.olds.repositories.RedisUserRepository
 import com.olds.security.RequestContextPlugin
 import com.olds.security.RequestLoggingPlugin
 
 fun Application.module() {
     val jwtConfig = loadJwtConfig()
+    val redisUrl = environment.config.propertyOrNull("ktor.redis.url")?.getString()
     val appModule = module {
         single<TodoRepository> { InMemoryTodoRepository() }
         single<PasswordHasher> { BCryptPasswordHasher() }
         single<UserRepository> {
-            val hasher = get<PasswordHasher>()
-            InMemoryUserRepository(
-                listOf(
-                    User(
-                        username = "admin",
-                        passwordHash = hasher.hash("admin"),
+            if (redisUrl != null) {
+                RedisUserRepository(redisUrl)
+            } else {
+                val hasher = get<PasswordHasher>()
+                InMemoryUserRepository(
+                    listOf(
+                        User(
+                            username = "admin",
+                            passwordHash = hasher.hash("admin"),
+                        ),
                     ),
-                ),
-            )
+                )
+            }
         }
         single { jwtConfig }
         single { JwtService(get()) }
@@ -50,6 +56,14 @@ fun Application.module() {
     configureSerialization()
     configureSecurity(jwtConfig = jwtConfig, jwtService = get())
     configureRouting(todoRepository = get(), userRepository = get(), passwordHasher = get(), jwtService = get())
+    if (redisUrl != null) {
+        monitor.subscribe(ApplicationStopped) {
+            val userRepository = get<UserRepository>()
+            if (userRepository is java.io.Closeable) {
+                userRepository.close()
+            }
+        }
+    }
 }
 
 fun Application.configureRouting(
