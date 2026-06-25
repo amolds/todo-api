@@ -19,6 +19,8 @@ import com.olds.interfaces.UserRepository
 import com.olds.models.User
 import com.olds.repositories.InMemoryTodoRepository
 import com.olds.repositories.InMemoryUserRepository
+import com.olds.security.RequestContextPlugin
+import com.olds.security.RequestLoggingPlugin
 
 fun Application.module() {
     val jwtConfig = loadJwtConfig()
@@ -57,6 +59,9 @@ fun Application.configureRouting(
     jwtService: JwtService,
 ) {
     routing {
+        install(RequestContextPlugin)
+        install(RequestLoggingPlugin)
+
         homeRoutes()
         authRoutes(userRepository = userRepository, passwordHasher = passwordHasher, jwtService = jwtService)
         todoRoutes(todoRepository)

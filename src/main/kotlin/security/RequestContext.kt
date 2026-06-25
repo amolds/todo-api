@@ -1,9 +1,10 @@
 package com.olds.security
 
 import io.ktor.server.application.ApplicationCall
-import io.ktor.server.auth.principal
-import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.application.createRouteScopedPlugin
+import io.ktor.server.auth.AuthenticationChecked
+import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.principal
 import io.ktor.util.AttributeKey
 
 data class RequestContext(
@@ -13,11 +14,11 @@ data class RequestContext(
 val RequestContextKey = AttributeKey<RequestContext>("RequestContext")
 
 val RequestContextPlugin = createRouteScopedPlugin("RequestContextPlugin") {
-    onCall { call ->
-        val principal = call.principal<JWTPrincipal>() ?: return@onCall
+    on(AuthenticationChecked) { call ->
+        val principal = call.principal<JWTPrincipal>() ?: return@on
         val username = principal.payload.subject
             ?: principal.payload.getClaim("username").asString()
-            ?: return@onCall
+            ?: return@on
 
         call.attributes.put(RequestContextKey, RequestContext(username))
     }

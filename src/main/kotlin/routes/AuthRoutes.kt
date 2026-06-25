@@ -3,8 +3,6 @@ package com.olds.routes
 import com.olds.interfaces.UserRepository
 import com.olds.helpers.PasswordHasher
 import com.olds.models.User
-import com.olds.security.RequestContextPlugin
-import com.olds.security.RequestLoggingPlugin
 import com.olds.security.currentUsername
 import com.olds.security.JwtService
 import kotlinx.serialization.Serializable
@@ -68,9 +66,6 @@ fun Route.authRoutes(
     }
 
     authenticate("auth-jwt") {
-        install(RequestLoggingPlugin)
-        install(RequestContextPlugin)
-
         get("/auth/me") {
             val username = call.currentUsername()
             if (username == null) {

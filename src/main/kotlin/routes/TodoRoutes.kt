@@ -2,8 +2,6 @@ package com.olds.routes
 
 import com.olds.models.Todo
 import com.olds.interfaces.TodoRepository
-import com.olds.security.RequestContextPlugin
-import com.olds.security.RequestLoggingPlugin
 import com.olds.security.currentUsername
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
@@ -13,9 +11,6 @@ import io.ktor.server.auth.authenticate
 
 fun Route.todoRoutes(todoRepository: TodoRepository) {
     authenticate("auth-jwt") {
-        install(RequestLoggingPlugin)
-        install(RequestContextPlugin)
-
         get("/todos") {
             call.respond(todoRepository.allTodos())
         }

@@ -1,10 +1,7 @@
 package com.olds.security
 
 import io.ktor.server.application.createRouteScopedPlugin
-import io.ktor.server.application.call
-import io.ktor.server.application.ApplicationCall
-import io.ktor.server.auth.principal
-import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.AuthenticationChecked
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.path
 import io.ktor.util.AttributeKey
@@ -13,19 +10,12 @@ import org.slf4j.MDC
 import java.time.Duration
 import java.time.Instant
 
-data class RequestLogContext(
-    val username: String,
-    val method: String,
-    val path: String,
-    val startTime: Instant,
-)
-
 private val RequestLogStartKey = AttributeKey<Instant>("RequestLogStartKey")
 
 val RequestLoggingPlugin = createRouteScopedPlugin("RequestLoggingPlugin") {
     val logger = LoggerFactory.getLogger("com.olds.RequestLogging")
 
-    onCall { call ->
+    on(AuthenticationChecked) { call ->
         val startTime = Instant.now()
         call.attributes.put(RequestLogStartKey, startTime)
 
