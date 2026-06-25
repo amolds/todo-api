@@ -1,4 +1,4 @@
-package com.olds
+package com.olds.models
 
 enum class Priority {
     Low,

@@ -1,78 +1,87 @@
 package com.olds.routes
 
-import com.olds.Todo
-import com.olds.TodoRepository
+import com.olds.models.Todo
+import com.olds.interfaces.TodoRepository
+import com.olds.security.RequestContextPlugin
+import com.olds.security.RequestLoggingPlugin
+import com.olds.security.currentUsername
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.auth.authenticate
 
 fun Route.todoRoutes(todoRepository: TodoRepository) {
-    get("/todos") {
-        call.respond(todoRepository.allTodos())
-    }
+    authenticate("auth-jwt") {
+        install(RequestLoggingPlugin)
+        install(RequestContextPlugin)
 
-    get("/todos/{id}") {
-        val id = call.parameters["id"] ?: run {
-            call.respond(HttpStatusCode.BadRequest, "Missing id")
-            return@get
+        get("/todos") {
+            call.respond(todoRepository.allTodos())
         }
 
-        val todo = todoRepository.todoById(id) ?: run {
-            call.respond(HttpStatusCode.NotFound)
-            return@get
-        }
-
-        call.respond(todo)
-    }
-
-    post("/todos") {
-        try {
-            val todo = call.receive<Todo>()
-            if (todoRepository.todoById(todo.id) != null) {
-                call.respond(HttpStatusCode.Conflict, "Todo ${todo.id} already exists")
-                return@post
+        get("/todos/{id}") {
+            val id = call.parameters["id"] ?: run {
+                call.respond(HttpStatusCode.BadRequest, "Missing id")
+                return@get
             }
 
-            todoRepository.addTodo(todo)
-            call.respond(HttpStatusCode.Created, todo)
-        } catch (e: IllegalStateException) {
-            call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
-        }
-    }
+            val todo = todoRepository.todoById(id) ?: run {
+                call.respond(HttpStatusCode.NotFound)
+                return@get
+            }
 
-    put("/todos/{id}") {
-        val id = call.parameters["id"] ?: run {
-            call.respond(HttpStatusCode.BadRequest, "Missing id")
-            return@put
+            call.respond(todo)
         }
 
-        try {
-            val todo = call.receive<Todo>()
-            if (todoRepository.todoById(todo.id) == null) {
-                call.respond(HttpStatusCode.NotFound, "Todo ${todo.id} not found")
+        post("/todos") {
+            try {
+                val todo = call.receive<Todo>()
+                if (todoRepository.todoById(todo.id) != null) {
+                    call.respond(HttpStatusCode.Conflict, "Todo ${todo.id} already exists")
+                    return@post
+                }
+
+                todoRepository.addTodo(todo)
+                call.respond(HttpStatusCode.Created, todo)
+            } catch (e: IllegalStateException) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
+            }
+        }
+
+        put("/todos/{id}") {
+            val id = call.parameters["id"] ?: run {
+                call.respond(HttpStatusCode.BadRequest, "Missing id")
                 return@put
             }
 
-            todoRepository.updateTodo(todo)
-            call.respond(HttpStatusCode.OK, todo)
-        } catch (e: IllegalStateException) {
-            call.respond(HttpStatusCode.NotFound, mapOf("error" to e.message))
-        }
-    }
+            try {
+                val todo = call.receive<Todo>()
+                if (todoRepository.todoById(todo.id) == null) {
+                    call.respond(HttpStatusCode.NotFound, "Todo ${todo.id} not found")
+                    return@put
+                }
 
-    delete("/todos/{id}") {
-        val id = call.parameters["id"] ?: run {
-            call.respond(HttpStatusCode.BadRequest, "Missing id")
-            return@delete
-        }
-
-        val todo = todoRepository.todoById(id) ?: run {
-            call.respond(HttpStatusCode.NotFound)
-            return@delete
+                todoRepository.updateTodo(todo)
+                call.respond(HttpStatusCode.OK, todo)
+            } catch (e: IllegalStateException) {
+                call.respond(HttpStatusCode.NotFound, mapOf("error" to e.message))
+            }
         }
 
-        todoRepository.removeTodo(todo)
-        call.respond(HttpStatusCode.NoContent)
+        delete("/todos/{id}") {
+            val id = call.parameters["id"] ?: run {
+                call.respond(HttpStatusCode.BadRequest, "Missing id")
+                return@delete
+            }
+
+            val todo = todoRepository.todoById(id) ?: run {
+                call.respond(HttpStatusCode.NotFound)
+                return@delete
+            }
+
+            todoRepository.removeTodo(todo)
+            call.respond(HttpStatusCode.NoContent)
+        }
     }
 }

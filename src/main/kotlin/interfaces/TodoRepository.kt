@@ -1,4 +1,7 @@
-package com.olds
+package com.olds.interfaces
+
+import com.olds.models.Priority
+import com.olds.models.Todo
 
 interface TodoRepository {
     fun allTodos(): List<Todo>

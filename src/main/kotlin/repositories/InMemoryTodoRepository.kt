@@ -1,4 +1,8 @@
-package com.olds
+package com.olds.repositories
+
+import com.olds.models.Priority
+import com.olds.models.Todo
+import com.olds.interfaces.TodoRepository
 
 class InMemoryTodoRepository : TodoRepository {
     private val todos = mutableListOf<Todo>(

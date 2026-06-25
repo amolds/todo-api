@@ -1,4 +1,4 @@
-package com.olds
+package com.olds.models
 
 import kotlinx.serialization.Serializable
 
