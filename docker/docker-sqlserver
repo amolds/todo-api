@@ -1,0 +1,17 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2025-latest
+    platform: linux/amd64
+    container_name: sqlserver
+    environment:
+      SA_PASSWORD: ""
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - /Volumes/Samsung_T5/Docker/sqlserver/data:/var/opt/mssql/data
+      - /Volumes/Samsung_T5/Docker/sqlserver/log:/var/opt/mssql/log
+      - /Volumes/Samsung_T5/Docker/sqlserver/secrets:/var/opt/mssql/secrets
+    restart: unless-stopped
+
+

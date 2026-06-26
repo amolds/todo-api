@@ -1,0 +1,22 @@
+CREATE DATABASE TodoDb;
+GO
+
+USE TodoDb;
+GO
+
+CREATE TABLE Tasks
+(
+   Id UNIQUEIDENTIFIER NOT NULL 
+      CONSTRAINT DF_Tasks_id DEFAULT  NEWID(),
+   Title NVARCHAR(200) NOT NULL,
+   Description NVARCHAR(1000) NULL,
+   Priority NVARCHAR(10) NOT NULL,
+   Completed BIT NOT NULL 
+      CONSTRAINT DF_Tasks_Completed DEFAULT (0),
+
+   CONSTRAINT PK_Tasks PRIMARY KEY (Id),
+
+   CONSTRAINT CK_Tasks_Priority
+      CHECK (Priority IN ('Low','Medium','High','Vital'))
+)
+
