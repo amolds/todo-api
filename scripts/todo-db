@@ -7,7 +7,8 @@ GO
 CREATE TABLE Tasks
 (
    Id UNIQUEIDENTIFIER NOT NULL 
-      CONSTRAINT DF_Tasks_id DEFAULT  NEWID(),
+      CONSTRAINT DF_Tasks_id DEFAULT NEWID(),
+   Username NVARCHAR(100) NOT NULL,
    Title NVARCHAR(200) NOT NULL,
    Description NVARCHAR(1000) NULL,
    Priority NVARCHAR(10) NOT NULL,
@@ -18,5 +19,10 @@ CREATE TABLE Tasks
 
    CONSTRAINT CK_Tasks_Priority
       CHECK (Priority IN ('Low','Medium','High','Vital'))
-)
+);
+GO
+
+CREATE INDEX IX_Tasks_Username
+   ON Tasks (Username)
+GO
 
