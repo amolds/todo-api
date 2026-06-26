@@ -10,5 +10,9 @@ ktor:
       issuer: todo-api
       audience: todo-api
       secret: ${?JWT_SECRET}
+  sqlserver:
+    url: ${?SQLSERVER_JDBC_URL}
+    username: ${?SQLSERVER_USERNAME}
+    password: ${?SQLSERVER_PASSWORD}
   redis:
     url: ${?REDIS_URL}

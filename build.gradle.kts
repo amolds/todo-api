@@ -17,6 +17,7 @@ kotlin {
 }
 dependencies {
     implementation("org.mindrot:jbcrypt:0.4")
+    implementation("com.microsoft.sqlserver:mssql-jdbc:12.8.1.jre11")
     implementation(ktorLibs.serialization.kotlinx.json)
     implementation(ktorLibs.server.config.yaml)
     implementation("io.ktor:ktor-server-auth:3.5.0")

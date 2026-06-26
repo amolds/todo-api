@@ -2,9 +2,11 @@ package com.olds
 
 import com.olds.routes.LoginResponse
 import com.olds.routes.CurrentUserResponse
+import com.olds.models.Todo
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.patch
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -81,6 +83,57 @@ class ServerTest {
                     headers.append(HttpHeaders.Authorization, "Bearer $token")
                 }.bodyAsText(),
             ),
+        )
+    }
+
+    @Test
+    fun `test complete todo marks todo completed`() = testApplication {
+        environment {
+            config = MapApplicationConfig(
+                "ktor.security.jwt.realm" to "todo-api",
+                "ktor.security.jwt.issuer" to "todo-api",
+                "ktor.security.jwt.audience" to "todo-api",
+                "ktor.security.jwt.secret" to "test-secret",
+            )
+        }
+
+        application {
+            module()
+        }
+
+        client.post("/auth/register") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"username":"jane","password":"secret"}""")
+        }
+
+        val loginResponse = client.post("/auth/login") {
+            contentType(ContentType.Application.Json)
+            setBody("""{"username":"jane","password":"secret"}""")
+        }
+
+        val token = Json.decodeFromString(LoginResponse.serializer(), loginResponse.bodyAsText()).token
+
+        client.post("/todos") {
+            headers.append(HttpHeaders.Authorization, "Bearer $token")
+            contentType(ContentType.Application.Json)
+            setBody("""{"id":"todo-1","title":"Aaron's First Todo","description":"Todo","priority":"Low"}""")
+        }
+
+        assertEquals(
+            HttpStatusCode.OK,
+            client.patch("/todos/todo-1/complete") {
+                headers.append(HttpHeaders.Authorization, "Bearer $token")
+            }.status,
+        )
+
+        assertEquals(
+            true,
+            Json.decodeFromString(
+                Todo.serializer(),
+                client.get("/todos/todo-1") {
+                    headers.append(HttpHeaders.Authorization, "Bearer $token")
+                }.bodyAsText(),
+            ).completed,
         )
     }
 }

@@ -1,82 +1,125 @@
 package com.olds.routes
 
+import com.olds.dto.CreateTodoRequest
 import com.olds.models.Todo
+import com.olds.models.Priority
 import com.olds.interfaces.TodoRepository
-import com.olds.security.currentUsername
+import com.olds.security.requireUsernameOrUnauthorized
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.auth.authenticate
+import java.util.UUID
 
 fun Route.todoRoutes(todoRepository: TodoRepository) {
     authenticate("auth-jwt") {
         get("/todos") {
-            call.respond(todoRepository.allTodos())
+            call.requireUsernameOrUnauthorized { username ->
+                call.respond(todoRepository.allTodos(username))
+            }
         }
 
         get("/todos/{id}") {
-            val id = call.parameters["id"] ?: run {
-                call.respond(HttpStatusCode.BadRequest, "Missing id")
-                return@get
-            }
+            call.requireUsernameOrUnauthorized { username ->
+                val id = call.parameters["id"] ?: run {
+                    call.respond(HttpStatusCode.BadRequest, "Missing id")
+                    return@requireUsernameOrUnauthorized
+                }
 
-            val todo = todoRepository.todoById(id) ?: run {
-                call.respond(HttpStatusCode.NotFound)
-                return@get
-            }
+                val todo = todoRepository.todoById(id, username) ?: run {
+                    call.respond(HttpStatusCode.NotFound)
+                    return@requireUsernameOrUnauthorized
+                }
 
-            call.respond(todo)
+                call.respond(todo)
+            }
         }
 
         post("/todos") {
-            try {
-                val todo = call.receive<Todo>()
-                if (todoRepository.todoById(todo.id) != null) {
-                    call.respond(HttpStatusCode.Conflict, "Todo ${todo.id} already exists")
-                    return@post
-                }
+            call.requireUsernameOrUnauthorized { username ->
+                try {
+                    val request = call.receive<CreateTodoRequest>()
+                    val todo = Todo(
+                        id = request.id ?: UUID.randomUUID().toString(),
+                        username = username,
+                        title = request.title,
+                        description = request.description,
+                        priority = request.priority,
+                        completed = request.completed,
+                    )
+                    if (todoRepository.todoById(todo.id, username) != null) {
+                        call.respond(HttpStatusCode.Conflict, "Todo ${todo.id} already exists")
+                        return@requireUsernameOrUnauthorized
+                    }
 
-                todoRepository.addTodo(todo)
-                call.respond(HttpStatusCode.Created, todo)
-            } catch (e: IllegalStateException) {
-                call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
+                    todoRepository.addTodo(username, todo)
+                    call.respond(HttpStatusCode.Created, todo)
+                } catch (e: IllegalStateException) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
+                }
             }
         }
 
         put("/todos/{id}") {
-            val id = call.parameters["id"] ?: run {
-                call.respond(HttpStatusCode.BadRequest, "Missing id")
-                return@put
-            }
-
-            try {
-                val todo = call.receive<Todo>()
-                if (todoRepository.todoById(todo.id) == null) {
-                    call.respond(HttpStatusCode.NotFound, "Todo ${todo.id} not found")
-                    return@put
+            call.requireUsernameOrUnauthorized { username ->
+                val id = call.parameters["id"] ?: run {
+                    call.respond(HttpStatusCode.BadRequest, "Missing id")
+                    return@requireUsernameOrUnauthorized
                 }
 
-                todoRepository.updateTodo(todo)
-                call.respond(HttpStatusCode.OK, todo)
-            } catch (e: IllegalStateException) {
-                call.respond(HttpStatusCode.NotFound, mapOf("error" to e.message))
+                try {
+                    val todo = call.receive<Todo>()
+                    if (todo.id != id) {
+                        call.respond(HttpStatusCode.BadRequest, "Path id does not match todo id")
+                        return@requireUsernameOrUnauthorized
+                    }
+
+                    if (todoRepository.todoById(todo.id, username) == null) {
+                        call.respond(HttpStatusCode.NotFound, "Todo ${todo.id} not found")
+                        return@requireUsernameOrUnauthorized
+                    }
+
+                    todoRepository.updateTodo(username, todo)
+                    call.respond(HttpStatusCode.OK, todo)
+                } catch (e: IllegalStateException) {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to e.message))
+                }
+            }
+        }
+
+        patch("/todos/{id}/complete") {
+            call.requireUsernameOrUnauthorized { username ->
+                val id = call.parameters["id"] ?: run {
+                    call.respond(HttpStatusCode.BadRequest, "Missing id")
+                    return@requireUsernameOrUnauthorized
+                }
+
+                if (todoRepository.todoById(id, username) == null) {
+                    call.respond(HttpStatusCode.NotFound, "Todo $id not found")
+                    return@requireUsernameOrUnauthorized
+                }
+
+                todoRepository.completeTodo(username, id)
+                call.respond(HttpStatusCode.OK)
             }
         }
 
         delete("/todos/{id}") {
-            val id = call.parameters["id"] ?: run {
-                call.respond(HttpStatusCode.BadRequest, "Missing id")
-                return@delete
-            }
+            call.requireUsernameOrUnauthorized { username ->
+                val id = call.parameters["id"] ?: run {
+                    call.respond(HttpStatusCode.BadRequest, "Missing id")
+                    return@requireUsernameOrUnauthorized
+                }
 
-            val todo = todoRepository.todoById(id) ?: run {
-                call.respond(HttpStatusCode.NotFound)
-                return@delete
-            }
+                val todo = todoRepository.todoById(id, username) ?: run {
+                    call.respond(HttpStatusCode.NotFound)
+                    return@requireUsernameOrUnauthorized
+                }
 
-            todoRepository.removeTodo(todo)
-            call.respond(HttpStatusCode.NoContent)
+                todoRepository.removeTodo(username, todo)
+                call.respond(HttpStatusCode.NoContent)
+            }
         }
     }
 }

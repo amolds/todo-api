@@ -4,11 +4,11 @@ import com.olds.models.Priority
 import com.olds.models.Todo
 
 interface TodoRepository {
-    fun allTodos(): List<Todo>
-    fun todoById(id: String): Todo?
-    fun todosByPriority(priority: Priority): List<Todo>
-    fun addTodo(todo: Todo)
-    fun updateTodo(todo: Todo)
-    fun removeTodo(todo: Todo)
+    fun allTodos(username: String): List<Todo>
+    fun todoById(id: String, username: String): Todo?
+    fun todosByPriority(username: String, priority: Priority): List<Todo>
+    fun addTodo(username: String, todo: Todo)
+    fun updateTodo(username: String, todo: Todo)
+    fun completeTodo(username: String, id: String)
+    fun removeTodo(username: String, todo: Todo)
 }
-

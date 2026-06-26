@@ -1,11 +1,11 @@
-package com.olds.models
+package com.olds.dto
 
+import com.olds.models.Priority
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Todo(
-    val id: String,
-    var username: String,
+data class CreateTodoRequest(
+    val id: String? = null,
     val title: String,
     val description: String,
     val priority: Priority,

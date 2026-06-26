@@ -20,14 +20,28 @@ import com.olds.models.User
 import com.olds.repositories.InMemoryTodoRepository
 import com.olds.repositories.InMemoryUserRepository
 import com.olds.repositories.RedisUserRepository
+import com.olds.repositories.SqlServerTodoRepository
 import com.olds.security.RequestContextPlugin
 import com.olds.security.RequestLoggingPlugin
 
 fun Application.module() {
     val jwtConfig = loadJwtConfig()
+    val sqlServerUrl = environment.config.propertyOrNull("ktor.sqlserver.url")?.getString()
+    val sqlServerUsername = environment.config.propertyOrNull("ktor.sqlserver.username")?.getString()
+    val sqlServerPassword = environment.config.propertyOrNull("ktor.sqlserver.password")?.getString()
     val redisUrl = environment.config.propertyOrNull("ktor.redis.url")?.getString()
     val appModule = module {
-        single<TodoRepository> { InMemoryTodoRepository() }
+        single<TodoRepository> {
+            if (sqlServerUrl != null) {
+                SqlServerTodoRepository(
+                    jdbcUrl = sqlServerUrl,
+                    username = sqlServerUsername,
+                    password = sqlServerPassword,
+                )
+            } else {
+                InMemoryTodoRepository()
+            }
+        }
         single<PasswordHasher> { BCryptPasswordHasher() }
         single<UserRepository> {
             if (redisUrl != null) {
