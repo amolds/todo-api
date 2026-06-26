@@ -1,10 +1,16 @@
 ktor:
   deployment:
-    port: 8080
+    port: ${?HTTP_PORT}
+    sslPort: ${?HTTPS_PORT}
   application:
     modules:
       - com.olds.RoutingKt.module
   security:
+    ssl:
+      keyStore: ${?SSL_KEYSTORE_PATH}
+      keyAlias: ${?SSL_KEY_ALIAS}
+      keyStorePassword: ${?SSL_KEYSTORE_PASSWORD}
+      privateKeyPassword: ${?SSL_PRIVATE_KEY_PASSWORD}
     jwt:
       realm: todo-api
       issuer: todo-api

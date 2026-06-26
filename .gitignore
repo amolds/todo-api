@@ -14,3 +14,7 @@ out/
 # OS files
 .DS_Store
 Thumbs.db
+
+# TLS certificates/keystores
+*.p12
+*.cer

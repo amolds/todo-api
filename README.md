@@ -34,6 +34,19 @@ To use SQL Server-backed todos, set:
 * `SQLSERVER_USERNAME`
 * `SQLSERVER_PASSWORD`
 
+To run with HTTPS, set:
+
+* `HTTP_PORT` (for example `8080`)
+* `HTTPS_PORT` (for example `8443`)
+* `SSL_KEYSTORE_PATH`
+* `SSL_KEY_ALIAS`
+* `SSL_KEYSTORE_PASSWORD`
+* `SSL_PRIVATE_KEY_PASSWORD`
+
+Example local keystore:
+
+`keytool -genkeypair -alias todo-api -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore ./todo-api.p12 -validity 3650`
+
 If the server starts successfully, you'll see the following output:
 ```
 2024-12-04 14:32:45.584 [main] INFO  Application - Application started in 0.303 seconds.
