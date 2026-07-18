@@ -18,6 +18,44 @@ Here's a list of features included in this project:
 | [Koin](https://insert-koin.io/docs/reference/koin-ktor/ktor/) | Provides dependency injection for application services |
 
 
+## Database setup
+
+```sql
+CREATE DATABASE todo
+ON PRIMARY (
+    NAME = todo_data,
+    FILENAME = '/var/opt/mssql/data/todo_data.mdf',
+    SIZE = 100MB,
+    FILEGROWTH = 25MB
+)
+LOG ON (
+    NAME = todo_log,
+    FILENAME = '/var/opt/mssql/data/todo_log.ldf',
+    SIZE = 50MB,
+    FILEGROWTH = 10MB
+);
+GO
+
+IF OBJECT_ID(N'dbo.Tasks', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Tasks (
+        id NVARCHAR(100) NOT NULL PRIMARY KEY,
+        username NVARCHAR(255) NOT NULL,
+        title NVARCHAR(255) NOT NULL,
+        description NVARCHAR(MAX) NOT NULL,
+        priority NVARCHAR(20) NOT NULL,
+        completed BIT NOT NULL CONSTRAINT DF_Tasks_Completed DEFAULT (0),
+
+        CONSTRAINT CK_Tasks_Priority
+            CHECK (priority IN ('Low', 'Medium', 'High', 'Vital'))
+    );
+
+    CREATE INDEX IX_Tasks_Username ON dbo.Tasks(username);
+    CREATE INDEX IX_Tasks_Username_Priority ON dbo.Tasks(username, priority);
+END
+GO
+```
+
 ## Building & Running
 To build or run the project, use one of the following tasks:
 
