@@ -1,0 +1,385 @@
+{
+  "info": {
+    "_postman_id": "c6df07ad-7d11-4f13-a0ce-a753236968c4",
+    "name": "todo-api",
+    "description": "Postman collection for the Ktor todo-api. Register or login first to populate {{token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Home",
+      "item": [
+        {
+          "name": "GET /",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /json/kotlinx-serialization",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/json/kotlinx-serialization",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "json",
+                "kotlinx-serialization"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "POST /auth/register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const data = pm.response.json();",
+                  "  if (data.token) pm.collectionVariables.set('token', data.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /auth/login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json();",
+                  "  if (data.token) pm.collectionVariables.set('token', data.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /auth/me",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Todos",
+      "item": [
+        {
+          "name": "GET /todos",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/todos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "todos"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /todos",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Sample todo\",\n  \"description\": \"Created from Postman\",\n  \"priority\": \"Medium\",\n  \"completed\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/todos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "todos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const data = pm.response.json();",
+                  "  if (data.id) pm.collectionVariables.set('todoId', data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /todos/{id}",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/todos/{{todoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "todos",
+                "{{todoId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /todos/{id}",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{todoId}}\",\n  \"username\": \"{{username}}\",\n  \"title\": \"Updated todo title\",\n  \"description\": \"Updated todo description\",\n  \"priority\": \"High\",\n  \"completed\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/todos/{{todoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "todos",
+                "{{todoId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH /todos/{id}/complete",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/todos/{{todoId}}/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "todos",
+                "{{todoId}}",
+                "complete"
+              ]
+            }
+          }
+        },
+        {
+          "name": "DELETE /todos/{id}",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/todos/{{todoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "todos",
+                "{{todoId}}"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://localhost:8443",
+      "type": "string"
+    },
+    {
+      "key": "username",
+      "value": "postman-user",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "Passw0rd!",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "todoId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
